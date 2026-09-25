@@ -297,7 +297,6 @@ nav.bar button.on{color:var(--fairway);font-weight:800}
 </div></nav>
 <div class="toast" id="toast"></div>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
 <script>
 /* ============================================================================
    Stableford del cumple de David Novoa — versión de un solo uso de PlaGolf
@@ -653,8 +652,8 @@ function softRender(){
 function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('show');clearTimeout(toast.t);toast.t=setTimeout(()=>t.classList.remove('show'),1800)}
 function setSync(){
   const n=Object.keys(queue).length, el=$('#sync');
-  el.className='sync '+(!sb?'bad':n?'warn':online?'ok':'warn');
-  el.querySelector('span').textContent=!sb?'Sin servidor':n?`${n} por subir`:online?(live?'En vivo':'Sincronizado'):'Sin señal';
+  el.className='sync '+(!sb?(libState==='failed'?'bad':'warn'):n?'warn':online?'ok':'warn');
+  el.querySelector('span').textContent=!sb?(libState==='failed'?'Sin señal':'Conectando…'):n?`${n} por subir`:online?(live?'En vivo':'Sincronizado'):'Sin señal';
 }
 
 /* ---------- festejos (portados de PlaGolf) ---------- */
@@ -770,9 +769,21 @@ async function pullAll(){
   b.data.forEach(applyKv); LS.set('cfg',cfg); LS.set('roster',roster);
   online=true; setSync(); softRender();
 }
-function start(){
+/* La página se pinta al instante con lo guardado en el teléfono; la conexión carga aparte
+   (si la señal es mala o el CDN tarda, no se queda en blanco). */
+let libState='loading';
+function loadLib(urls){
+  const u=urls.shift(); if(!u){ libState='failed'; setSync(); setTimeout(()=>{ libState='loading'; setSync(); loadLib(LIB_URLS.slice()); },15000); return; }
+  const sc=document.createElement('script'); sc.src=u; sc.async=true;
+  sc.onload=()=>connect(); sc.onerror=()=>{ sc.remove(); loadLib(urls); };
+  document.head.appendChild(sc);
+}
+const LIB_URLS=['https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js','https://unpkg.com/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js'];
+function start(){ try{ render(); }catch(e){ console.error(e); } setSync(); loadLib(LIB_URLS.slice()); }
+function connect(){
+  if(sb) return;
   try{ sb=window.supabase.createClient(SB_URL,SB_KEY,{auth:{persistSession:false}}) }catch(e){ sb=null }
-  setSync(); render(); if(!sb) return;
+  setSync(); if(!sb) return;
   pullAll().then(flush);
   sb.channel('novoa').on('postgres_changes',{event:'*',schema:'public',table:T_SCORES},p=>{
       if(firstPull) return;
