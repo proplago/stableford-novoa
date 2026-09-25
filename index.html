@@ -434,7 +434,7 @@ function topCast(S,cid){ let best=null; Object.values(S).forEach(s=>{ const v=(s
 function dayHighlights(){
   const S=dayStats(), rows=standings().filter(r=>r.thru>0); const out=[]; const push=(e,t,n,v,c)=>out.push({e,t,n,v,c}); let x;
   if(!rows.length) return out;
-  const top=rows[0]; push('👑','Líder del día',short(top.p.name),top.pts+' pts','gold');
+  const top=rows[0]; if(top.pts>0) push('👑','Líder del día',short(top.p.name),top.pts+' pts','gold');
   if((x=topBy(S,'aces'))) push('⛳','¡Hoyo en uno!',x.name,'×'+x.val,'ace');
   if((x=topBy(S,'birdies'))) push('🐦','Rey del birdie',x.name,'×'+x.val,'good');
   if((x=topBy(S,'eagles'))) push('🦅','Águila',x.name,'×'+x.val,'good');
