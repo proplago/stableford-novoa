@@ -202,6 +202,11 @@ h1,h2,h3{margin:0;text-wrap:balance}
 .pl .ch{text-align:center;font-weight:800;font-size:20px;line-height:1}
 .pl .ch small{display:block;font-size:9.5px;color:var(--muted-2);font-weight:700;letter-spacing:.04em}
 .pl .src{grid-column:1 / -1;font-size:11.5px;color:var(--muted-2);margin-top:-4px}
+.pmove{grid-column:1 / -1;display:flex;align-items:center;gap:8px;font-size:12px;color:var(--muted);font-weight:700}
+.pmove select{min-height:38px;border:1px solid var(--line-3);border-radius:9px;background:var(--paper);padding:0 8px;font-weight:700}
+.pmove .rm{margin-left:auto;min-height:38px;border-radius:9px;border:1px solid #e7a79f;background:var(--paper);color:var(--clay);font-weight:700;padding:0 12px;font-size:12.5px}
+.pmove .rm.arm{background:var(--clay);color:#fff}
+.addp{display:block;margin:8px 0 0;min-height:42px;border-radius:10px;border:1.5px dashed var(--line-3);background:var(--paper);color:var(--fairway);font-weight:700;padding:0 14px;width:100%}
 .plh{display:grid;grid-template-columns:1fr 72px 54px;gap:8px;padding:0 10px 4px;font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted-2);font-weight:800}
 .plh span+span{text-align:center}
 .field{display:grid;gap:4px;margin-bottom:10px}
@@ -325,7 +330,7 @@ const DEF_ROSTER=[
  {id:'c4',g:'C',name:'Ramón Porras',hi:13.3,src:'GHIN 579916 · Ramón Porras Vázquez'},
  {id:'d1',g:'D',name:'Carlos Palomino',hi:26.2,src:'GHAP 7C501A71'},
  {id:'d2',g:'D',name:'Josué Canales',hi:null,src:''},
- {id:'d3',g:'D',name:'Luis Carlos Cervantes',hi:22.0,src:'GHAP 0B8E0881'},
+ {id:'d3',g:'D',name:'Luis Carlos Cervantes',hi:22.0,src:'GHAP 0B8E0881',out:true},
  {id:'d4',g:'D',name:'Erasmo Villegas',hi:11.9,src:'GHAP 95999FAF · Erasmo Carlos Villegas Rosales'},
  {id:'e1',g:'E',name:'Fer Plas',hi:19.3,src:'GHIN 12115481 · Fernando Plascencia Gómez'},
  {id:'e2',g:'E',name:'Jorge Ríos',hi:22.4,src:'GHIN 12131844 · Jorge Iván Ríos Padilla'},
@@ -364,6 +369,7 @@ const $=s=>document.querySelector(s);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const pick=a=>a[Math.floor(Math.random()*a.length)];
 const P=id=>roster.find(p=>p.id===id);
+const act=()=>roster.filter(p=>!p.out);   // los que sí juegan
 const short=n=>String(n||'').replace(/\s*🎂/,'');
 const cell=(pid,h)=>((cells[pid]||{})[h])||{g:null,p:null,f:[]};
 const G=(pid,h)=>{const c=(cells[pid]||{})[h];return c&&c.g!=null?c.g:null};
@@ -397,7 +403,7 @@ function calc(p){
   return {p,ch,pts,thru,holes,out:sum(0,9),inn:sum(9,18),cb:[sum(9,18),sum(12,18),sum(15,18),sum(17,18)]};
 }
 function standings(){
-  const rows=roster.map(calc);
+  const rows=act().map(calc);
   rows.sort((a,b)=>b.pts-a.pts||b.cb[0]-a.cb[0]||b.cb[1]-a.cb[1]||b.cb[2]-a.cb[2]||b.cb[3]-a.cb[3]||b.thru-a.thru||a.p.name.localeCompare(b.p.name));
   let pos=0,prev=null;
   rows.forEach((r,i)=>{const k=[r.pts,...r.cb].join('|');if(k!==prev){pos=i+1;prev=k}r.pos=pos});
@@ -407,7 +413,7 @@ function standings(){
 /* estadísticas del día por jugador (misma idea que _dayStatsRaw de PlaGolf, adaptada a puntos) */
 function dayStats(){
   const S={};
-  roster.forEach(p=>{ const ch=courseHc(p);
+  act().forEach(p=>{ const ch=courseHc(p);
     const s={id:p.id,name:short(p.name),g:p.g,pts:0,played:0,birdies:0,eagles:0,aces:0,holeouts:0,sandies:0,aquas:0,calacas:0,zopilotes:0,zeros:0,pickups:0,castById:{},
       hot:0,cold:0,birdieStreak:0,bestHole:0};
     let hot=0,cold=0,bs=0;
@@ -480,7 +486,7 @@ function dayCarrilla(){
 }
 function feedEvents(){
   const ev=[];
-  roster.forEach(p=>{ const nm=short(p.name);
+  act().forEach(p=>{ const nm=short(p.name);
     for(let i=0;i<18;i++){ const c=cell(p.id,i+1); if(c.g===null) continue;
       if(c.g===1){ ev.push({h:i+1,txt:nm,t:'ace'}); continue; }
       new Set([...autoUnits(c.g,i,c.p),...validManual(c,i)]).forEach(u=>{const x=UNITS.find(z=>z.id===u); if(x) ev.push({h:i+1,txt:nm+' · '+x.e,t:'good'})});
@@ -508,7 +514,7 @@ function renderFeed(){
   bar.innerHTML=`<div class="feed-track" style="animation-duration:${Math.max(16,(hl.length+ev.length)*2.6)}s">${chips}${chips}</div>`;
 }
 function missBanner(){
-  const m=roster.filter(p=>courseHc(p)===null); if(!m.length) return '';
+  const m=act().filter(p=>courseHc(p)===null); if(!m.length) return '';
   return `<div class="banner"><b>Faltan ${m.length} handicaps:</b> ${m.map(p=>esc(short(p.name))).join(', ')}. Juegan con 0 golpes hasta que los carguen en Salidas.</div>`;
 }
 const ini=n=>short(n).split(/\s+/).map(w=>w[0]).join('').slice(0,2).toUpperCase();
@@ -521,7 +527,7 @@ function tcardHtml(r){
 }
 function renderBoard(){
   const all=standings(); const played=all.filter(r=>r.thru>0);
-  let h=`<h1 class="screen-t">Resultados</h1><p class="screen-s">Stableford individual con handicap · ${all.length} jugadores · 5 salidas</p>`;
+  let h=`<h1 class="screen-t">Resultados</h1><p class="screen-s">Stableford individual con handicap · ${all.length} jugadores · ${GROUPS.filter(g=>groupPlayers(g).length).length} salidas</p>`;
   const bd=all.find(r=>r.p.id===BDAY);
   h+=`<div class="bday"><div class="e">🎂</div><div><b>Hoy se festeja a David Novoa</b><div>${bd&&bd.thru?`Va ${bd.tie?'T':''}${bd.pos}° con ${bd.pts} pts en ${bd.thru} hoyos`:`Sale en el Foursome A a las ${esc(cfg.times.A||'')}`}</div></div></div>`;
   h+=missBanner();
@@ -549,7 +555,7 @@ function renderBoard(){
   h+=`<div class="exprow"><button class="linkbtn" data-act="exportimg">📸 Imagen para el grupo</button><button class="linkbtn" data-act="copy">📋 Texto para WhatsApp</button></div>`;
   return h;
 }
-function groupPlayers(g){return roster.filter(p=>p.g===g)}
+function groupPlayers(g){return act().filter(p=>p.g===g)}
 function holeState(g,h){const ps=groupPlayers(g);const n=ps.filter(p=>G(p.id,h)!==null).length;return n===ps.length&&n?'done':n?'part':''}
 function renderScore(){
   const i=ui.hole-1, ps=groupPlayers(ui.g), par=cfg.par[i];
@@ -592,15 +598,20 @@ function renderScore(){
 }
 function renderPlayers(){
   const t=TEES[cfg.tee]||TEES.bl;
-  let h=`<h1 class="screen-t">Salidas</h1><p class="screen-s">HC de juego = índice × ${t.sl}/113 + (${t.cr} − ${parTotal()}), redondeado, al ${cfg.allow}%. Tees ${t.n}. Lo que cambies aquí lo ven todos.</p>${missBanner()}`;
+  let h=`<h1 class="screen-t">Salidas</h1><p class="screen-s">HC de juego = índice × ${t.sl}/113 + (${t.cr} − ${parTotal()}), redondeado, al ${cfg.allow}%. Tees ${t.n}. Lo que cambies aquí lo ven todos: nombres, handicaps, cambios de foursome y quién no vino.</p>${missBanner()}`;
   GROUPS.forEach(g=>{
     h+=`<div class="sect">Foursome ${g}${cfg.times[g]?' · '+esc(cfg.times[g]):''}</div><div class="plh"><span>Nombre</span><span>Índice</span><span>Juega</span></div><div class="plist">`;
     groupPlayers(g).forEach(p=>{const ch=courseHc(p);
       h+=`<div class="pl"><input id="n-${p.id}" data-pf="name" data-p="${p.id}" value="${esc(p.name)}" aria-label="Nombre">
         <input id="h-${p.id}" class="num ${p.hi===null||p.hi===''?'missing':''}" data-pf="hi" data-p="${p.id}" inputmode="decimal" placeholder="—" value="${p.hi??''}" aria-label="Índice de handicap de ${esc(short(p.name))}">
-        <div class="ch">${ch===null?'—':ch}<small>HC JUEGO</small></div>${p.src?`<div class="src">${esc(p.src)}</div>`:''}</div>`});
-    h+=`</div>`;
+        <div class="ch">${ch===null?'—':ch}<small>HC JUEGO</small></div>
+        <div class="pmove"><label for="g-${p.id}">Foursome</label><select id="g-${p.id}" data-grp="${p.id}">${GROUPS.map(x=>`<option ${x===p.g?'selected':''}>${x}</option>`).join('')}</select>
+          <button class="rm" data-out="${p.id}">No viene</button></div>${p.src?`<div class="src">${esc(p.src)}</div>`:''}</div>`});
+    h+=`${groupPlayers(g).length?'':'<div class="pl"><div class="src" style="margin:0">Sin jugadores</div></div>'}</div>
+      <button class="addp" data-add="${g}">+ Agregar jugador al ${g}</button>`;
   });
+  const outs=roster.filter(p=>p.out);
+  if(outs.length) h+=`<div class="sect">No vienen</div><div class="plist">${outs.map(p=>`<div class="swrow"><span>${esc(short(p.name))} <small class="note">era del ${p.g}</small></span><button class="addp" style="margin:0" data-back="${p.id}">Regresarlo</button></div>`).join('')}</div>`;
   h+=`<div class="exprow"><button class="linkbtn" data-act="exportsal">📸 Imagen de las salidas</button></div>`;
   return h;
 }
@@ -846,6 +857,11 @@ document.addEventListener('click',async e=>{
     const u=UNITS.find(x=>x.id===d.flag); if(u&&f.has(d.flag)&&!(c.g>0&&c.g<=par)) toast(u.n+': cuenta al marcar par o mejor');
     setCell(d.p,ui.hole,{f:[...f]}); return; }
   if(d.pref){ pref[d.pref]=!pref[d.pref]; LS.set('pref',pref); if(d.pref==='sound'&&pref.sound) playSound('mini'); render(); return; }
+  if(d.out){ if(!b.classList.contains('arm')){ b.classList.add('arm'); b.textContent='¿Seguro? Toca otra vez'; setTimeout(()=>{ if(b.isConnected){b.classList.remove('arm');b.textContent='No viene'} },3500); return; }
+    const p=P(d.out); if(p){ p.out=true; saveKv('roster'); toast(short(p.name)+' fuera del torneo'); render(); } return; }
+  if(d.back){ const p=P(d.back); if(p){ delete p.out; saveKv('roster'); toast(short(p.name)+' regresó al '+p.g); render(); } return; }
+  if(d.add){ const id='x'+Date.now().toString(36).slice(-6); roster.push({id,g:d.add,name:'',hi:null,src:'Agregado en el campo'}); saveKv('roster'); render();
+    const el=document.getElementById('n-'+id); if(el){ el.focus(); el.placeholder='Nombre del jugador'; } return; }
   if(d.act==='nextpend'){ const n=cfg.par.map((_,j)=>j+1).find(n=>holeState(ui.g,n)!=='done'); if(n){ui.hole=n;_hlPulse=true;render();window.scrollTo(0,0)} else toast('¡Todo capturado! ✓'); return; }
   if(d.act==='copy'){ const txt=resultsText();
     try{ await navigator.clipboard.writeText(txt); toast('Copiado'); }
@@ -874,7 +890,9 @@ document.addEventListener('input',e=>{
   if(d.time){ cfg.times[d.time]=el.value; saveKv('cfg'); return; }
   if(d.par!==undefined||d.si!==undefined){ const k=d.par!==undefined?'par':'si', idx=Number(d[k]), n=parseInt(el.value,10); if(!isNaN(n)){ cfg[k][idx]=n; saveKv('cfg'); } return; }
 });
-document.addEventListener('change',e=>{ if(e.target.dataset.cfg) render(); });
+document.addEventListener('change',e=>{ const d=e.target.dataset;
+  if(d.grp){ const p=P(d.grp); if(p){ p.g=e.target.value; saveKv('roster'); toast(short(p.name)+' pasa al Foursome '+p.g); render(); } return; }
+  if(d.cfg) render(); });
 
 start();
 </script>
