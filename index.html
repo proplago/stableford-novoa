@@ -194,10 +194,11 @@ h1,h2,h3{margin:0;text-wrap:balance}
 
 /* Salidas / Reglas */
 .plist{border:1px solid var(--line);border-radius:14px;overflow:hidden}
-.pl{display:grid;grid-template-columns:1fr 72px 54px;gap:8px;align-items:center;padding:8px 10px;border-top:1px solid var(--line-2)}
+.pl{display:grid;grid-template-columns:1fr 66px 66px;gap:8px;align-items:center;padding:8px 10px;border-top:1px solid var(--line-2)}
 .pl:first-child{border-top:0}
 .pl input{width:100%;min-height:42px;border:1px solid var(--line-3);border-radius:10px;background:var(--paper-soft);padding:6px 9px}
 .pl input.num{text-align:center;font-variant-numeric:tabular-nums;font-weight:700}
+.pl input.jg{border-color:var(--fairway);color:var(--fairway);font-size:17px}
 .pl input.missing{border-color:var(--clay);background:var(--clay-soft)}
 .pl .ch{text-align:center;font-weight:800;font-size:20px;line-height:1}
 .pl .ch small{display:block;font-size:9.5px;color:var(--muted-2);font-weight:700;letter-spacing:.04em}
@@ -207,7 +208,7 @@ h1,h2,h3{margin:0;text-wrap:balance}
 .pmove .rm{margin-left:auto;min-height:38px;border-radius:9px;border:1px solid #e7a79f;background:var(--paper);color:var(--clay);font-weight:700;padding:0 12px;font-size:12.5px}
 .pmove .rm.arm{background:var(--clay);color:#fff}
 .addp{display:block;margin:8px 0 0;min-height:42px;border-radius:10px;border:1.5px dashed var(--line-3);background:var(--paper);color:var(--fairway);font-weight:700;padding:0 14px;width:100%}
-.plh{display:grid;grid-template-columns:1fr 72px 54px;gap:8px;padding:0 10px 4px;font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted-2);font-weight:800}
+.plh{display:grid;grid-template-columns:1fr 66px 66px;gap:8px;padding:0 10px 4px;font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted-2);font-weight:800}
 .plh span+span{text-align:center}
 .field{display:grid;gap:4px;margin-bottom:10px}
 .field label{font-size:12px;color:var(--muted);font-weight:700}
@@ -309,33 +310,36 @@ const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZ
 const T_SCORES='golf_novoa_scores', T_KV='golf_novoa_kv';
 
 const TEES={az:{n:'Azules',cr:74.9,sl:131},bl:{n:'Blancas',cr:73.1,sl:123},do:{n:'Doradas',cr:70.7,sl:121},ro:{n:'Rojas',cr:68.4,sl:117}};
-const GROUPS=['A','B','C','D','E'];
+const GROUP_IDS=['A','B','C','D','E'];
+const tmin=t=>{const m=String(t||'').match(/(\d+):(\d+)/); if(!m) return 9999; let h=+m[1]; if(h<7) h+=12; return h*60+(+m[2]);};
+let GROUPS=GROUP_IDS.slice();
+function sortGroups(){ GROUPS=GROUP_IDS.slice().sort((a,b)=>tmin(cfg.times[a])-tmin(cfg.times[b])); }
 const BDAY='a4';   // David Novoa
-const DEF_CFG={title:'Cumple de David Novoa',date:'Viernes',tee:'bl',allow:100,
+const DEF_CFG={title:'Cumple de David Novoa',date:'Viernes',tee:'bl',allow:80,
   par:[4,4,5,3,4,4,3,4,5,4,4,5,3,4,4,3,5,4],
   si:[13,1,7,15,17,3,11,5,9,2,18,8,16,12,4,10,6,14],   // tarjeta oficial del club (la de PlaGolf)
-  times:{A:'12:30',B:'12:40',C:'12:50',D:'1:00',E:'1:10'}};
+  times:{A:'12:50',B:'1:10',C:'1:00',D:'12:30',E:'12:40'}};
 const DEF_ROSTER=[
- {id:'a1',g:'A',name:'Diego',hi:15.7,src:'Entra en lugar de Tavo Hdz'},
- {id:'a2',g:'A',name:'Pipe Rentería',hi:null,src:''},
- {id:'a3',g:'A',name:'Armando Vaqueiro',hi:null,src:''},
- {id:'a4',g:'A',name:'David Novoa 🎂',hi:null,src:'El cumpleañero'},
- {id:'b1',g:'B',name:'Checo Villarreal',hi:10.7,src:'GHIN 12115477 · Sergio Villarreal González'},
- {id:'b2',g:'B',name:'Chino Padilla',hi:null,src:''},
- {id:'b3',g:'B',name:'Yuca',hi:14.6,src:'GHIN 2528603 · Fabián Orozco Obregón'},
- {id:'b4',g:'B',name:'Fabián Plas',hi:22.7,src:'GHIN 2522390 · Fabián Plascencia Zavala'},
- {id:'c1',g:'C',name:'Nacho Glz',hi:13.3,src:'GHAP 11291503 · Juan Ignacio González Ibarra'},
- {id:'c2',g:'C',name:'Roberto Padilla',hi:23.3,src:'GHAP 57BC2296 · Roberto Padilla Salazar'},
- {id:'c3',g:'C',name:'Beto Moreno',hi:null,src:''},
- {id:'c4',g:'C',name:'Ramón Porras',hi:13.3,src:'GHIN 579916 · Ramón Porras Vázquez'},
- {id:'d1',g:'D',name:'Carlos Palomino',hi:26.2,src:'GHAP 7C501A71'},
- {id:'d2',g:'D',name:'Josué Canales',hi:null,src:''},
- {id:'d3',g:'D',name:'Luis Carlos Cervantes',hi:22.0,src:'GHAP 0B8E0881',out:true},
- {id:'d4',g:'D',name:'Erasmo Villegas',hi:11.9,src:'GHAP 95999FAF · Erasmo Carlos Villegas Rosales'},
- {id:'e1',g:'E',name:'Fer Plas',hi:19.3,src:'GHIN 12115481 · Fernando Plascencia Gómez'},
- {id:'e2',g:'E',name:'Jorge Ríos',hi:22.4,src:'GHIN 12131844 · Jorge Iván Ríos Padilla'},
- {id:'e3',g:'E',name:'Mario Rubio',hi:10.5,src:'GHIN 2396568 · Mario Rubio Villarreal'},
- {id:'e4',g:'E',name:'Hugo Castillo',hi:15.5,src:'GHIN 1176430 · Hugo Francisco Castillo Ponce'}
+ {id:'a1',g:'A',name:'Diego',hp100:13,fixed:10,src:'Hoja del club · Diego Andrade'},
+ {id:'a2',g:'A',name:'Pipe Rentería',hp100:3,fixed:2,src:'Hoja del club · Felipe Rentería'},
+ {id:'a3',g:'A',name:'Armando Vaqueiro',hp100:18,fixed:14,src:'Hoja del club · Armando Vaqueiro'},
+ {id:'a4',g:'A',name:'David Novoa 🎂',hp100:18,fixed:14,src:'Hoja del club · El cumpleañero'},
+ {id:'b1',g:'B',name:'Checo Villarreal',hp100:8,fixed:6,src:'Hoja del club · Sergio Villarreal'},
+ {id:'b2',g:'B',name:'Chino Padilla',hp100:20,fixed:16,src:'Hoja del club · Marcelo Padilla'},
+ {id:'b3',g:'B',name:'Yuca',hp100:12,fixed:10,src:'Hoja del club · Fabián Orozco'},
+ {id:'b4',g:'B',name:'Fabián Plas',hp100:20,fixed:16,src:'Hoja del club · Fabián Plascencia'},
+ {id:'c1',g:'C',name:'Nacho Glz',hp100:11,fixed:9,src:'Hoja del club · Ignacio González'},
+ {id:'c2',g:'C',name:'Roberto Padilla',hp100:21,fixed:16,src:'Hoja del club · Roberto Padilla'},
+ {id:'c3',g:'C',name:'Beto Moreno',hp100:23,fixed:18,src:'Hoja del club · Alberto Moreno'},
+ {id:'c4',g:'C',name:'Ramón Porras',hp100:11,fixed:9,src:'Hoja del club · Ramón Porras'},
+ {id:'d1',g:'D',name:'Carlos Palomino',hp100:25,fixed:20,src:'Hoja del club · Carlos Palomino'},
+ {id:'d2',g:'D',name:'Josué Canales',hp100:26,fixed:21,src:'Hoja del club · Josué Canales'},
+ {id:'d3',g:'D',name:'Luis Carlos Cervantes',hp100:22,fixed:18,src:'Hoja del club · Luis Carlos Cervantes',out:true},
+ {id:'d4',g:'D',name:'Erasmo Villegas',hp100:9,fixed:7,src:'Hoja del club · Erasmo Villegas'},
+ {id:'e1',g:'E',name:'Fer Plas',hp100:18,fixed:14,src:'Hoja del club · Fernando Plascencia'},
+ {id:'e2',g:'E',name:'Jorge Ríos',hp100:20,fixed:16,src:'Hoja del club · Jorge Ríos'},
+ {id:'e3',g:'E',name:'Mario Rubio',hp100:8,fixed:6,src:'Hoja del club · Mario Rubio'},
+ {id:'e4',g:'E',name:'Hugo Castillo',hp100:13,fixed:10,src:'Hoja del club · Hugo Castillo'}
 ];
 // Unidades (solo para festejo y trofeos) y castigos, como en PlaGolf
 const UNITS=[{id:'birdie',n:'Birdie',e:'🐦',auto:1},{id:'eagle',n:'Eagle',e:'🦅',auto:1},{id:'holeout',n:'Hole out',e:'🎯',auto:1},
@@ -343,7 +347,7 @@ const UNITS=[{id:'birdie',n:'Birdie',e:'🐦',auto:1},{id:'eagle',n:'Eagle',e:'�
 const CAST=[{id:'chevez',n:'Chevez',e:'🍺'},{id:'calaca',n:'Calaca',e:'💀',auto:1},{id:'pomo',n:'Pomo',e:'🍾'}];
 const HOUSE_RULES=[
  'Stableford — puntos por hoyo sobre el score neto: albatros 5 · águila 4 · birdie 3 · par 2 · bogey 1 · doble o peor 0.',
- 'Ventaja — cada quien recibe golpes según su HC de juego en los hoyos de HCP más bajo. Los puntitos ● en la tarjeta son sus golpes.',
+ 'Ventaja — se juega al 80% del HP (hoja del club). Cada quien recibe sus golpes en los hoyos de HCP más bajo. Los puntitos ● en la tarjeta son sus golpes.',
  'Levantar — si ya no hay puntos, levanta la bola y marca X. Cuenta 0 y no frena al grupo.',
  'Empates — gana el de más puntos en los últimos 9, luego últimos 6, 3 y el 18.',
  'Paloma — 🍾 Pomo.',
@@ -379,9 +383,8 @@ const parTotal=()=>cfg.par.reduce((a,b)=>a+b,0);
 function courseHc(p){
   if(!p) return null;
   if(p.fixed!==undefined&&p.fixed!==null&&p.fixed!=='') return Number(p.fixed);
-  if(p.hi===null||p.hi===undefined||p.hi==='') return null;
-  const t=TEES[cfg.tee]||TEES.bl;
-  return Math.round((Number(p.hi)*t.sl/113+(t.cr-parTotal()))*cfg.allow/100);
+  if(p.hp100!==undefined&&p.hp100!==null&&p.hp100!=='') return Math.round(Number(p.hp100)*cfg.allow/100);
+  return null;
 }
 function strokes(ch,i){
   if(ch===null) return 0;
@@ -498,9 +501,10 @@ function feedEvents(){
 
 /* ---------- render ---------- */
 function header(){
+  sortGroups();
   const t=TEES[cfg.tee]||TEES.bl;
   $('#title').textContent=cfg.title||'Stableford';
-  $('#subtitle').textContent=`${cfg.date} · Campestre León · ${t.n} · Stableford ${cfg.allow}%`;
+  $('#subtitle').textContent=`${cfg.date} · Campestre León · Stableford al ${cfg.allow}% del HP`;
   document.title='Stableford · '+(cfg.title||'');
   document.querySelectorAll('nav.bar button').forEach(b=>b.classList.toggle('on',b.dataset.tab===ui.tab));
 }
@@ -597,14 +601,13 @@ function renderScore(){
   return h;
 }
 function renderPlayers(){
-  const t=TEES[cfg.tee]||TEES.bl;
-  let h=`<h1 class="screen-t">Salidas</h1><p class="screen-s">HC de juego = índice × ${t.sl}/113 + (${t.cr} − ${parTotal()}), redondeado, al ${cfg.allow}%. Tees ${t.n}. Lo que cambies aquí lo ven todos: nombres, handicaps, cambios de foursome y quién no vino.</p>${missBanner()}`;
+  let h=`<h1 class="screen-t">Salidas</h1><p class="screen-s">Handicaps de la hoja del club. Se juega al ${cfg.allow}% del HP. Si cambias el HP 100%, el de juego se recalcula; también puedes corregir el de juego directo. Lo que cambies aquí lo ven todos.</p>${missBanner()}`;
   GROUPS.forEach(g=>{
-    h+=`<div class="sect">Foursome ${g}${cfg.times[g]?' · '+esc(cfg.times[g]):''}</div><div class="plh"><span>Nombre</span><span>Índice</span><span>Juega</span></div><div class="plist">`;
+    h+=`<div class="sect">Foursome ${g}${cfg.times[g]?' · '+esc(cfg.times[g]):''}</div><div class="plh"><span>Nombre</span><span>HP 100%</span><span>Juega ${cfg.allow}%</span></div><div class="plist">`;
     groupPlayers(g).forEach(p=>{const ch=courseHc(p);
       h+=`<div class="pl"><input id="n-${p.id}" data-pf="name" data-p="${p.id}" value="${esc(p.name)}" aria-label="Nombre">
-        <input id="h-${p.id}" class="num ${p.hi===null||p.hi===''?'missing':''}" data-pf="hi" data-p="${p.id}" inputmode="decimal" placeholder="—" value="${p.hi??''}" aria-label="Índice de handicap de ${esc(short(p.name))}">
-        <div class="ch">${ch===null?'—':ch}<small>HC JUEGO</small></div>
+        <input id="h-${p.id}" class="num ${ch===null?'missing':''}" data-pf="hp100" data-p="${p.id}" inputmode="numeric" placeholder="—" value="${p.hp100??''}" aria-label="HP 100% de ${esc(short(p.name))}">
+        <input id="j-${p.id}" class="num jg ${ch===null?'missing':''}" data-pf="fixed" data-p="${p.id}" inputmode="numeric" placeholder="—" value="${ch??''}" aria-label="HP de juego de ${esc(short(p.name))}">
         <div class="pmove"><label for="g-${p.id}">Foursome</label><select id="g-${p.id}" data-grp="${p.id}">${GROUPS.map(x=>`<option ${x===p.g?'selected':''}>${x}</option>`).join('')}</select>
           <button class="rm" data-out="${p.id}">No viene</button></div>${p.src?`<div class="src">${esc(p.src)}</div>`:''}</div>`});
     h+=`${groupPlayers(g).length?'':'<div class="pl"><div class="src" style="margin:0">Sin jugadores</div></div>'}</div>
@@ -617,7 +620,7 @@ function renderPlayers(){
 }
 function renderRules(){
   const tees=Object.entries(TEES).map(([k,t])=>`<option value="${k}" ${cfg.tee===k?'selected':''}>${t.n} · ${t.cr} / ${t.sl}</option>`).join('');
-  const allow=[100,95,90,85].map(a=>`<option value="${a}" ${cfg.allow==a?'selected':''}>${a}%</option>`).join('');
+  const allow=[100,95,90,85,80].map(a=>`<option value="${a}" ${cfg.allow==a?'selected':''}>${a}%</option>`).join('');
   return `<h1 class="screen-t">Reglas</h1><p class="screen-s">Stableford y reglas de la casa. Abajo, la configuración del torneo.</p>
   <div class="rules">${HOUSE_RULES.map(r=>{const k=r.indexOf(' — ');return `<div>${k>0?`<b>${esc(r.slice(0,k))}</b> — ${esc(r.slice(k+3))}`:esc(r)}</div>`}).join('')}</div>
   <div class="sect">Este teléfono</div><div class="card">
@@ -626,8 +629,7 @@ function renderRules(){
   <div class="sect">Torneo</div>
   <div class="field"><label for="c-title">Nombre</label><input id="c-title" data-cfg="title" value="${esc(cfg.title)}"></div>
   <div class="field"><label for="c-date">Fecha</label><input id="c-date" data-cfg="date" value="${esc(cfg.date)}"></div>
-  <div class="row2"><div class="field"><label for="c-tee">Tees</label><select id="c-tee" data-cfg="tee">${tees}</select></div>
-  <div class="field"><label for="c-allow">% del handicap</label><select id="c-allow" data-cfg="allow">${allow}</select></div></div>
+  <div class="field"><label for="c-allow">% del HP (solo recalcula a quien no tenga HP de juego fijo)</label><select id="c-allow" data-cfg="allow">${allow}</select></div>
   <div class="row2">${GROUPS.map(g=>`<div class="field"><label for="t-${g}">Salida ${g}</label><input id="t-${g}" data-time="${g}" value="${esc(cfg.times[g]||'')}"></div>`).join('')}</div>
   <div class="sect">Campo · par y HCP por hoyo</div>
   <div class="coursewrap"><table class="course"><tr><th></th>${cfg.par.map((_,i)=>`<th>${i+1}</th>`).join('')}</tr>
@@ -882,8 +884,10 @@ document.addEventListener('click',async e=>{
 document.addEventListener('input',e=>{
   const el=e.target, d=el.dataset;
   if(d.pf){ const p=P(d.p); if(!p) return;
-    if(d.pf==='hi'){ const s=el.value.replace(',','.').trim(); p.hi=s===''?null:(isNaN(Number(s))?p.hi:Number(s)); el.classList.toggle('missing',p.hi===null);
-      const ch=courseHc(p); el.parentElement.querySelector('.ch').innerHTML=`${ch===null?'—':ch}<small>HC JUEGO</small>`; }
+    if(d.pf==='hp100'||d.pf==='fixed'){ const s=el.value.replace(',','.').trim(); const v=s===''?null:(isNaN(Number(s))?undefined:Number(s)); if(v===undefined) return;
+      if(d.pf==='hp100'){ p.hp100=v; p.fixed=v===null?null:Math.round(v*cfg.allow/100); const j=document.getElementById('j-'+p.id); if(j) j.value=p.fixed??''; }
+      else p.fixed=v;
+      const ch=courseHc(p); el.parentElement.querySelectorAll('input.num').forEach(x=>x.classList.toggle('missing',ch===null)); }
     else p.name=el.value;
     saveKv('roster'); return; }
   if(d.cfg){ cfg[d.cfg]=d.cfg==='allow'?Number(el.value):el.value; saveKv('cfg'); header(); return; }
