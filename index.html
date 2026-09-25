@@ -1,0 +1,479 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0a6a3a">
+<title>Stableford Novoa</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@1,6..72,500;1,6..72,600&family=Patrick+Hand&display=swap">
+<style>
+:root{
+  --ground:#f6f8f5; --panel:#ffffff; --ink:#1b211d; --ink-2:#5a675c; --ink-3:#8a968c;
+  --fairway:#0a6a3a; --fairway-ink:#ffffff; --fairway-soft:#e8f2ec; --line:#dbe4dc; --line-2:#c6d3c8;
+  --cream:#f6efda; --cream-line:#d4c39a; --cream-rule:#e3d6b0;
+  --clay:#b23b2e; --clay-soft:#fbe9e6; --amber:#9a7020; --amber-soft:#f7ecd2;
+  --display:'Newsreader',Georgia,'Times New Roman',serif;
+  --hand:'Patrick Hand','Bradley Hand','Segoe Print',cursive;
+  --body:system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){
+  :root{--ground:#0f1410;--panel:#161d18;--ink:#e8efe9;--ink-2:#a3b2a6;--ink-3:#75857a;
+    --fairway:#4fb37f;--fairway-ink:#0b1a11;--fairway-soft:#16281e;--line:#26332a;--line-2:#334437;
+    --cream:#211f16;--cream-line:#4a4230;--cream-rule:#3a3426;
+    --clay:#e58a7c;--clay-soft:#2e1713;--amber:#d9b25e;--amber-soft:#2c2412;color-scheme:dark}
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--ground);color:var(--ink);font:15px/1.45 var(--body);-webkit-font-smoothing:antialiased;
+  padding:env(safe-area-inset-top,0px) 16px calc(96px + env(safe-area-inset-bottom,0px))}
+.wrap{max-width:620px;margin:0 auto}
+button,input,select{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--fairway);outline-offset:2px}
+h1,h2,h3{margin:0;text-wrap:balance}
+
+header.top{padding:18px 0 12px;display:flex;gap:12px;align-items:flex-end;justify-content:space-between}
+.brand .eyebrow{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-3);font-weight:600}
+.brand h1{font-family:var(--display);font-style:italic;font-weight:600;font-size:28px;line-height:1.1;color:var(--fairway)}
+.brand .sub{color:var(--ink-2);font-size:13px;margin-top:2px}
+.sync{flex:none;font-size:12px;color:var(--ink-2);display:flex;align-items:center;gap:6px;padding-bottom:4px}
+.sync i{width:8px;height:8px;border-radius:50%;background:var(--ink-3);display:inline-block}
+.sync.ok i{background:var(--fairway)} .sync.warn i{background:var(--amber)} .sync.bad i{background:var(--clay)}
+
+.banner{border:1px solid var(--cream-line);background:var(--amber-soft);color:var(--ink);border-radius:12px;padding:10px 12px;font-size:13.5px;margin:4px 0 14px}
+.banner b{color:var(--amber)}
+
+/* chips */
+.chips{display:flex;gap:6px;overflow-x:auto;padding:2px 0 10px;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex:none;min-height:40px;padding:6px 14px;border-radius:999px;border:1px solid var(--line-2);background:var(--panel);font-weight:600;font-size:14px;color:var(--ink-2)}
+.chip.on{background:var(--fairway);border-color:var(--fairway);color:var(--fairway-ink)}
+.chip small{font-weight:500;opacity:.8;margin-left:4px}
+
+/* tablero */
+.paper{background:var(--cream);border:1px solid var(--cream-line);border-radius:12px;overflow:hidden}
+.lb-row{display:grid;grid-template-columns:34px 1fr auto auto;gap:10px;align-items:center;padding:10px 12px;border-bottom:1px solid var(--cream-rule);width:100%;text-align:left;background:none;border-left:0;border-right:0;border-top:0;min-height:56px}
+.lb-row:last-child{border-bottom:0}
+.lb-pos{font-family:var(--hand);font-size:20px;color:var(--ink-2);text-align:center}
+.lb-row.top1 .lb-pos{color:var(--fairway);font-weight:700}
+.lb-name{font-family:var(--hand);font-size:20px;line-height:1.1}
+.lb-meta{font-size:12px;color:var(--ink-2);margin-top:2px}
+.lb-meta .miss{color:var(--clay);font-weight:600}
+.lb-hc{font-size:12px;color:var(--ink-2);text-align:right;font-variant-numeric:tabular-nums}
+.lb-pts{font-family:var(--hand);font-size:28px;min-width:44px;text-align:right;font-variant-numeric:tabular-nums;color:var(--ink)}
+.lb-pts small{display:block;font-family:var(--body);font-size:10px;color:var(--ink-3);letter-spacing:.08em;text-transform:uppercase;line-height:1}
+.detail{padding:4px 12px 12px;border-bottom:1px solid var(--cream-rule);overflow-x:auto}
+.card{border-collapse:collapse;font-variant-numeric:tabular-nums;font-size:12.5px;min-width:100%}
+.card th,.card td{padding:4px 0;text-align:center;min-width:26px}
+.card th{color:var(--ink-3);font-weight:600}
+.card td.lbl,.card th.lbl{text-align:left;color:var(--ink-2);padding-right:8px;min-width:44px}
+.card .pt{font-family:var(--hand);font-size:16px}
+.p0{color:var(--clay)} .p3{color:var(--fairway);font-weight:700} .p4{color:var(--amber);font-weight:700}
+.dot{color:var(--fairway);font-size:9px;letter-spacing:-1px}
+.tools{display:flex;gap:4px;justify-content:space-between;align-items:center;margin:10px 0 0;flex-wrap:wrap}
+.linkbtn{background:none;border:0;color:var(--fairway);font-weight:600;padding:10px 4px;min-height:44px}
+.note{color:var(--ink-3);font-size:12.5px}
+
+/* captura */
+.holes{display:flex;gap:6px;overflow-x:auto;padding:2px 0 12px;scrollbar-width:none}
+.holes::-webkit-scrollbar{display:none}
+.hb{flex:none;width:42px;height:44px;border-radius:10px;border:1px solid var(--line-2);background:var(--panel);font-weight:700;font-variant-numeric:tabular-nums;color:var(--ink-2);position:relative}
+.hb.done{background:var(--fairway-soft);color:var(--fairway);border-color:transparent}
+.hb.part::after{content:'';position:absolute;right:5px;top:5px;width:6px;height:6px;border-radius:50%;background:var(--amber)}
+.hb.on{background:var(--fairway);color:var(--fairway-ink);border-color:var(--fairway)}
+.holehead{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin:2px 0 10px}
+.holehead h2{font-family:var(--display);font-style:italic;font-weight:600;font-size:30px}
+.holehead .facts{color:var(--ink-2);font-size:14px;text-align:right}
+.holehead .facts b{color:var(--ink);font-variant-numeric:tabular-nums}
+.prow{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:10px 12px;margin-bottom:8px;display:grid;grid-template-columns:1fr auto;gap:8px 10px;align-items:center}
+.prow .who{font-family:var(--hand);font-size:21px;line-height:1.1}
+.prow .who small{display:block;font-family:var(--body);font-size:12px;color:var(--ink-2);margin-top:2px}
+.prow .who small .miss{color:var(--clay);font-weight:600}
+.badge{min-width:52px;text-align:center;border-radius:10px;padding:4px 8px;background:var(--ground);border:1px solid var(--line)}
+.badge b{font-family:var(--hand);font-size:24px;display:block;line-height:1}
+.badge span{font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3)}
+.badge.b0{background:var(--clay-soft);border-color:transparent} .badge.b0 b{color:var(--clay)}
+.badge.b3{background:var(--fairway-soft);border-color:transparent} .badge.b3 b{color:var(--fairway)}
+.badge.b4{background:var(--amber-soft);border-color:transparent} .badge.b4 b{color:var(--amber)}
+.stepper{grid-column:1 / -1;display:grid;grid-template-columns:52px 1fr 52px 52px;gap:6px}
+.stepper button{height:48px;border-radius:12px;border:1px solid var(--line-2);background:var(--ground);font-size:22px;font-weight:600}
+.stepper .val{font-family:var(--hand);font-size:28px;background:var(--panel)}
+.stepper .val.empty{font-family:var(--body);font-size:15px;color:var(--fairway);font-weight:600;border-style:dashed}
+.stepper .x{font-size:14px;color:var(--ink-2)}
+.stepper .x.on{background:var(--clay-soft);color:var(--clay);border-color:transparent}
+.navholes{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:12px 0}
+.navholes button{min-height:48px;border-radius:12px;border:0;background:var(--fairway);color:var(--fairway-ink);font-weight:700}
+.navholes button:first-child{background:var(--panel);color:var(--ink);border:1px solid var(--line-2)}
+.gsum{width:100%;border-collapse:collapse;font-size:14px;font-variant-numeric:tabular-nums;margin-top:6px}
+.gsum td{padding:8px 4px;border-top:1px solid var(--line)}
+.gsum td:last-child{text-align:right;font-family:var(--hand);font-size:20px}
+.gsum td.t{color:var(--ink-3);font-size:12px;text-align:right}
+
+/* jugadores / ajustes */
+.sec{margin:6px 0 20px}
+.sec h3{font-family:var(--display);font-style:italic;font-weight:600;font-size:20px;margin:0 0 8px}
+.plist{background:var(--panel);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.pl{display:grid;grid-template-columns:1fr 72px 56px;gap:8px;align-items:center;padding:8px 10px;border-bottom:1px solid var(--line)}
+.pl:last-child{border-bottom:0}
+.pl input{width:100%;min-height:40px;border:1px solid var(--line-2);border-radius:9px;background:var(--ground);padding:6px 8px}
+.pl input.num{text-align:center;font-variant-numeric:tabular-nums}
+.pl input.missing{border-color:var(--clay);background:var(--clay-soft)}
+.pl .ch{text-align:center;font-family:var(--hand);font-size:22px;line-height:1}
+.pl .ch small{display:block;font-family:var(--body);font-size:10px;color:var(--ink-3)}
+.pl .src{grid-column:1 / -1;font-size:11.5px;color:var(--ink-3);margin-top:-4px}
+.plh{display:grid;grid-template-columns:1fr 72px 56px;gap:8px;padding:0 10px 4px;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3)}
+.plh span+span{text-align:center}
+.field{display:grid;gap:4px;margin-bottom:10px}
+.field label{font-size:12px;color:var(--ink-2);font-weight:600}
+.field input,.field select{min-height:44px;border:1px solid var(--line-2);border-radius:10px;background:var(--panel);padding:8px 10px;width:100%}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.coursewrap{overflow-x:auto;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:8px}
+.course{border-collapse:collapse;font-size:13px}
+.course th,.course td{padding:3px;text-align:center}
+.course th{color:var(--ink-3);font-weight:600}
+.course input{width:36px;min-height:34px;text-align:center;border:1px solid var(--line-2);border-radius:7px;background:var(--ground);font-variant-numeric:tabular-nums}
+.danger{min-height:44px;border-radius:10px;border:1px solid var(--clay);background:transparent;color:var(--clay);font-weight:600;padding:0 14px}
+.danger.arm{background:var(--clay);color:#fff}
+
+/* barra inferior */
+nav.bar{position:fixed;left:0;right:0;bottom:0;background:var(--panel);border-top:1px solid var(--line);display:flex;justify-content:center;padding:4px 8px calc(4px + env(safe-area-inset-bottom,0px));z-index:5}
+nav.bar .in{display:flex;max-width:620px;width:100%}
+nav.bar button{flex:1;background:none;border:0;min-height:52px;font-size:12px;font-weight:600;color:var(--ink-2);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px}
+nav.bar button span{font-size:19px;line-height:1}
+nav.bar button.on{color:var(--fairway)}
+.toast{position:fixed;left:50%;bottom:calc(76px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--ground);padding:9px 16px;border-radius:999px;font-size:13.5px;z-index:9;opacity:0;transition:opacity .2s;pointer-events:none}
+.toast.show{opacity:1}
+textarea.copy{width:100%;min-height:160px;border-radius:10px;border:1px solid var(--line-2);background:var(--panel);padding:10px;font:13px/1.4 ui-monospace,Menlo,monospace}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div class="brand">
+      <div class="eyebrow">Campestre León · Stableford</div>
+      <h1 id="title">Cumple de David Novoa</h1>
+      <div class="sub" id="subtitle"></div>
+    </div>
+    <div class="sync" id="sync"><i></i><span>Conectando…</span></div>
+  </header>
+  <main id="view"></main>
+</div>
+<nav class="bar"><div class="in">
+  <button data-tab="board"><span>🏆</span>Tablero</button>
+  <button data-tab="score"><span>✍️</span>Captura</button>
+  <button data-tab="players"><span>👥</span>Jugadores</button>
+  <button data-tab="settings"><span>⚙️</span>Campo</button>
+</div></nav>
+<div class="toast" id="toast"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script>
+/* ===== Conexión (tablas exclusivas del evento en Supabase "PlaGo Life") ===== */
+const SB_URL='https://guetzwgwbgdhnrqgtnhq.supabase.co';
+const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd1ZXR6d2d3YmdkaG5ycWd0bmhxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI3NTc0MDcsImV4cCI6MjA5ODMzMzQwN30.Vzm9WSlWBE_XSnxYRu9A4TqGvMRbq8it0RLiPdIsTnk'; // llave pública (anon) — solo toca las tablas golf_novoa_*
+const T_SCORES='golf_novoa_scores', T_KV='golf_novoa_kv';
+
+/* ===== Datos base ===== */
+const TEES={az:{n:'Azules',cr:74.9,sl:131},bl:{n:'Blancas',cr:73.1,sl:123},do:{n:'Doradas',cr:70.7,sl:121},ro:{n:'Rojas',cr:68.4,sl:117}};
+const GROUPS=['A','B','C','D','E'];
+const DEF_CFG={title:'Cumple de David Novoa',date:'Viernes',tee:'bl',allow:100,
+  par:[4,4,5,3,4,4,3,4,5,4,4,5,3,4,4,3,5,4],
+  si:[9,3,13,17,15,1,11,5,7,16,12,2,18,6,8,14,4,10],
+  times:{A:'',B:'',C:'',D:'',E:''}};
+const DEF_ROSTER=[
+ {id:'a1',g:'A',name:'Diego',hi:15.7,src:'Entra en lugar de Tavo Hdz'},
+ {id:'a2',g:'A',name:'Pipe Rentería',hi:null,src:''},
+ {id:'a3',g:'A',name:'Armando Vaqueiro',hi:null,src:''},
+ {id:'a4',g:'A',name:'David Novoa 🎂',hi:null,src:'El cumpleañero'},
+ {id:'b1',g:'B',name:'Checo Villarreal',hi:10.7,src:'GHIN 12115477 · Sergio Villarreal González'},
+ {id:'b2',g:'B',name:'Chino Padilla',hi:null,src:''},
+ {id:'b3',g:'B',name:'Yuca',hi:14.6,src:'GHIN 2528603 · Fabián Orozco Obregón'},
+ {id:'b4',g:'B',name:'Fabián Plas',hi:22.7,src:'GHIN 2522390 · Fabián Plascencia Zavala'},
+ {id:'c1',g:'C',name:'Nacho Glz',hi:13.3,src:'GHAP 11291503 · Juan Ignacio González Ibarra'},
+ {id:'c2',g:'C',name:'Roberto Padilla',hi:23.3,src:'GHAP 57BC2296 · Roberto Padilla Salazar'},
+ {id:'c3',g:'C',name:'Beto Moreno',hi:null,src:''},
+ {id:'c4',g:'C',name:'Ramón Porras',hi:13.3,src:'GHIN 579916 · Ramón Porras Vázquez'},
+ {id:'d1',g:'D',name:'Carlos Palomino',hi:26.2,src:'GHAP 7C501A71'},
+ {id:'d2',g:'D',name:'Josué Canales',hi:null,src:''},
+ {id:'d3',g:'D',name:'Luis Carlos Cervantes',hi:22.0,src:'GHAP 0B8E0881'},
+ {id:'d4',g:'D',name:'Erasmo Villegas',hi:11.9,src:'GHAP 95999FAF · Erasmo Carlos Villegas Rosales'},
+ {id:'e1',g:'E',name:'Fer Plas',hi:19.3,src:'GHIN 12115481 · Fernando Plascencia Gómez'},
+ {id:'e2',g:'E',name:'Jorge Ríos',hi:22.4,src:'GHIN 12131844 · Jorge Iván Ríos Padilla'},
+ {id:'e3',g:'E',name:'Mario Rubio',hi:10.5,src:'GHIN 2396568 · Mario Rubio Villarreal'},
+ {id:'e4',g:'E',name:'Hugo Castillo',hi:15.5,src:'GHIN 1176430 · Hugo Francisco Castillo Ponce'}
+];
+
+/* ===== Estado ===== */
+const clone=o=>JSON.parse(JSON.stringify(o));
+const LS={get(k,d){try{const v=localStorage.getItem('novoa:'+k);return v?JSON.parse(v):d}catch(e){return d}},set(k,v){try{localStorage.setItem('novoa:'+k,JSON.stringify(v))}catch(e){}}};
+let cfg=Object.assign(clone(DEF_CFG),LS.get('cfg',{}));
+let roster=LS.get('roster',clone(DEF_ROSTER));
+let scores=LS.get('scores',{});          // scores[pid][hole] = gross | -1 (recogió)
+let queue=LS.get('queue',{});            // cambios pendientes de subir: "pid|hole" -> gross|null
+const ui=Object.assign({tab:'board',g:'A',hole:1,filter:'all',open:null},LS.get('ui',{}));
+let sb=null, online=false, live=false;
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+/* ===== Cálculo Stableford ===== */
+const parTotal=()=>cfg.par.reduce((a,b)=>a+b,0);
+function courseHc(p){
+  if(p.fixed!==undefined&&p.fixed!==null&&p.fixed!=='') return Number(p.fixed);
+  if(p.hi===null||p.hi===undefined||p.hi==='') return null;
+  const t=TEES[cfg.tee]||TEES.bl;
+  const raw=Number(p.hi)*t.sl/113+(t.cr-parTotal());
+  return Math.round(raw*cfg.allow/100);
+}
+function strokes(ch,i){
+  if(ch===null) return 0;
+  const si=cfg.si[i];
+  if(ch>=0) return Math.floor(ch/18)+(si<=ch%18?1:0);
+  const n=-ch; return -(Math.floor(n/18)+(si>18-(n%18)?1:0));
+}
+function points(gross,i,ch){
+  if(gross===undefined||gross===null) return null;
+  if(gross===-1) return 0;
+  return Math.max(0,2+cfg.par[i]+strokes(ch,i)-gross);
+}
+function calc(p){
+  const ch=courseHc(p), sc=scores[p.id]||{};
+  let pts=0,thru=0; const holes=[];
+  for(let i=0;i<18;i++){const v=sc[i+1];const pt=points(v,i,ch);if(pt!==null){pts+=pt;thru++}holes.push({v,pt,st:strokes(ch,i)})}
+  const sum=(a,b)=>holes.slice(a,b).reduce((s,h)=>s+(h.pt||0),0);
+  return {p,ch,pts,thru,holes,cb:[sum(9,18),sum(12,18),sum(15,18),sum(17,18)]};
+}
+function standings(){
+  const rows=roster.map(calc);
+  rows.sort((a,b)=>b.pts-a.pts||b.cb[0]-a.cb[0]||b.cb[1]-a.cb[1]||b.cb[2]-a.cb[2]||b.cb[3]-a.cb[3]||b.thru-a.thru||a.p.name.localeCompare(b.p.name));
+  let pos=0,prev=null;
+  rows.forEach((r,i)=>{const key=[r.pts,...r.cb].join('|');if(key!==prev){pos=i+1;prev=key}r.pos=pos});
+  rows.forEach(r=>{r.tie=rows.filter(x=>x.pos===r.pos).length>1});
+  return rows;
+}
+
+/* ===== Render ===== */
+function header(){
+  const t=TEES[cfg.tee]||TEES.bl;
+  $('#title').textContent=cfg.title||'Stableford';
+  document.title='Stableford · '+(cfg.title||'');
+  $('#subtitle').textContent=`${cfg.date} · Salidas ${t.n} (${t.cr} / ${t.sl}) · ${cfg.allow}% del HC`;
+  document.querySelectorAll('nav.bar button').forEach(b=>b.classList.toggle('on',b.dataset.tab===ui.tab));
+}
+function missingCount(){return roster.filter(p=>courseHc(p)===null).length}
+function missBanner(){
+  const m=roster.filter(p=>courseHc(p)===null);
+  if(!m.length) return '';
+  return `<div class="banner"><b>Faltan ${m.length} handicaps:</b> ${m.map(p=>esc(p.name)).join(', ')}. Mientras tanto juegan con 0 golpes. Cárgalos en Jugadores.</div>`;
+}
+function renderBoard(){
+  const rows=standings().filter(r=>ui.filter==='all'||r.p.g===ui.filter);
+  const chips=['all',...GROUPS].map(g=>`<button class="chip ${ui.filter===g?'on':''}" data-filter="${g}">${g==='all'?'Todos':'Foursome '+g}</button>`).join('');
+  const list=rows.map(r=>{
+    const miss=r.ch===null;
+    const meta=`Foursome ${r.p.g} · ${r.thru===18?'Terminó':r.thru===1?'1 hoyo':r.thru?r.thru+' hoyos':'Sin empezar'}${miss?' · <span class="miss">falta HC</span>':''}`;
+    let det='';
+    if(ui.open===r.p.id){
+      const half=(a,b,lbl)=>`<tr><th class="lbl">${lbl}</th>${cfg.par.slice(a,b).map((_,j)=>`<th>${a+j+1}</th>`).join('')}<th>Σ</th></tr>
+        <tr><td class="lbl">Par</td>${cfg.par.slice(a,b).map(x=>`<td>${x}</td>`).join('')}<td>${cfg.par.slice(a,b).reduce((s,x)=>s+x,0)}</td></tr>
+        <tr><td class="lbl">Golpes</td>${r.holes.slice(a,b).map(h=>`<td>${h.v===-1?'X':h.v??'·'}${h.st>0?`<div class="dot">${'●'.repeat(h.st)}</div>`:''}</td>`).join('')}<td></td></tr>
+        <tr><td class="lbl">Puntos</td>${r.holes.slice(a,b).map(h=>`<td class="pt ${h.pt===0?'p0':h.pt>=4?'p4':h.pt===3?'p3':''}">${h.pt??''}</td>`).join('')}<td class="pt">${r.holes.slice(a,b).reduce((s,h)=>s+(h.pt||0),0)}</td></tr>`;
+      det=`<div class="detail"><table class="card">${half(0,9,'Ida')}${half(9,18,'Vuelta')}</table></div>`;
+    }
+    return `<button class="lb-row ${r.pos===1&&r.thru?'top1':''}" data-open="${r.p.id}" aria-expanded="${ui.open===r.p.id}">
+      <span class="lb-pos">${r.tie?'T':''}${r.pos}</span>
+      <span><div class="lb-name">${esc(r.p.name)}</div><div class="lb-meta">${meta}</div></span>
+      <span class="lb-hc">HC<br>${miss?'—':r.ch}</span>
+      <span class="lb-pts">${r.pts}<small>pts</small></span></button>${det}`;
+  }).join('');
+  return `${missBanner()}<div class="chips">${chips}</div><div class="paper">${list}</div>
+  <div class="tools"><span class="note">Toca un nombre para ver su tarjeta. Empates: últimos 9, 6, 3 y 1.</span>
+  <button class="linkbtn" data-act="copy">Copiar para WhatsApp</button></div><div id="copybox"></div>`;
+}
+function groupPlayers(g){return roster.filter(p=>p.g===g)}
+function renderScore(){
+  const i=ui.hole-1, ps=groupPlayers(ui.g);
+  const chips=GROUPS.map(g=>`<button class="chip ${ui.g===g?'on':''}" data-g="${g}">Foursome ${g}${cfg.times[g]?`<small>${esc(cfg.times[g])}</small>`:''}</button>`).join('');
+  const holes=cfg.par.map((_,j)=>{const n=ps.filter(p=>(scores[p.id]||{})[j+1]!=null).length;
+    return `<button class="hb ${ui.hole===j+1?'on':''} ${n===ps.length&&n?'done':n?'part':''}" data-hole="${j+1}">${j+1}</button>`}).join('');
+  const rows=ps.map(p=>{
+    const ch=courseHc(p), v=(scores[p.id]||{})[ui.hole], st=strokes(ch,i), pt=points(v,i,ch);
+    const cls=pt===null?'':pt===0?'b0':pt>=4?'b4':pt===3?'b3':'';
+    const hcTxt=ch===null?'<span class="miss">falta HC</span>':`HC ${ch}${st>0?' · recibe '+'●'.repeat(st):st<0?' · da '+(-st):''}`;
+    const empty=v===undefined||v===null;
+    return `<div class="prow">
+      <div class="who">${esc(p.name)}<small>${hcTxt} · ${calc(p).pts} pts</small></div>
+      <div class="badge ${cls}"><b>${pt===null?'–':pt}</b><span>pts</span></div>
+      <div class="stepper">
+        <button data-step="-1" data-p="${p.id}" aria-label="Un golpe menos">−</button>
+        <button class="val ${empty?'empty':''}" data-set="par" data-p="${p.id}">${empty?'Poner par ('+cfg.par[i]+')':v===-1?'X':v}</button>
+        <button data-step="1" data-p="${p.id}" aria-label="Un golpe más">+</button>
+        <button class="x ${v===-1?'on':''}" data-x="${p.id}" aria-label="Recogió">${v===-1?'Borrar':'X'}</button>
+      </div></div>`}).join('');
+  const sum=ps.map(p=>{const c=calc(p);return `<tr><td>${esc(p.name)}</td><td class="t">${c.thru} hoyos</td><td>${c.pts}</td></tr>`}).join('');
+  return `<div class="chips">${chips}</div><div class="holes" id="holes">${holes}</div>
+  <div class="holehead"><h2>Hoyo ${ui.hole}</h2><div class="facts">Par <b>${cfg.par[i]}</b> · Ventaja <b>${cfg.si[i]}</b></div></div>
+  ${rows}
+  <div class="navholes"><button data-nav="-1">← Hoyo ${ui.hole===1?18:ui.hole-1}</button><button data-nav="1">Hoyo ${ui.hole===18?1:ui.hole+1} →</button></div>
+  <table class="gsum">${sum}</table>
+  <p class="note">X = recogió la bola (0 puntos). Los puntos cuentan golpes de ventaja según el HC de juego.</p>`;
+}
+function renderPlayers(){
+  const t=TEES[cfg.tee]||TEES.bl;
+  const secs=GROUPS.map(g=>`<div class="sec"><h3>Foursome ${g}</h3>
+    <div class="plh"><span>Nombre</span><span>Índice</span><span>Juega</span></div><div class="plist">
+    ${groupPlayers(g).map(p=>{const ch=courseHc(p);return `<div class="pl">
+      <input id="n-${p.id}" data-pf="name" data-p="${p.id}" value="${esc(p.name)}" aria-label="Nombre">
+      <input id="h-${p.id}" class="num ${p.hi===null||p.hi===''?'missing':''}" data-pf="hi" data-p="${p.id}" inputmode="decimal" placeholder="—" value="${p.hi??''}" aria-label="Índice de handicap">
+      <div class="ch">${ch===null?'—':ch}<small>HC juego</small></div>
+      ${p.src?`<div class="src">${esc(p.src)}</div>`:''}</div>`}).join('')}</div></div>`).join('');
+  return `${missBanner()}<p class="note">HC de juego = Índice × ${t.sl}/113 + (${t.cr} − ${parTotal()}), redondeado, al ${cfg.allow}%. Salidas ${t.n}. Los cambios se guardan solos para todos.</p>${secs}`;
+}
+function renderSettings(){
+  const tees=Object.entries(TEES).map(([k,t])=>`<option value="${k}" ${cfg.tee===k?'selected':''}>${t.n} · ${t.cr} / ${t.sl}</option>`).join('');
+  const allow=[100,95,90,85].map(a=>`<option value="${a}" ${cfg.allow==a?'selected':''}>${a}%</option>`).join('');
+  const times=GROUPS.map(g=>`<div class="field"><label for="t-${g}">Salida ${g}</label><input id="t-${g}" data-time="${g}" value="${esc(cfg.times[g]||'')}" placeholder="7:30"></div>`).join('');
+  const cols=cfg.par.map((_,i)=>`<th>${i+1}</th>`).join('');
+  const parRow=cfg.par.map((x,i)=>`<td><input id="par-${i}" data-par="${i}" inputmode="numeric" value="${x}"></td>`).join('');
+  const siRow=cfg.si.map((x,i)=>`<td><input id="si-${i}" data-si="${i}" inputmode="numeric" value="${x}"></td>`).join('');
+  return `<div class="sec"><h3>Evento</h3>
+    <div class="field"><label for="c-title">Nombre</label><input id="c-title" data-cfg="title" value="${esc(cfg.title)}"></div>
+    <div class="field"><label for="c-date">Fecha</label><input id="c-date" data-cfg="date" value="${esc(cfg.date)}"></div>
+    <div class="row2"><div class="field"><label for="c-tee">Salidas</label><select id="c-tee" data-cfg="tee">${tees}</select></div>
+    <div class="field"><label for="c-allow">% del handicap</label><select id="c-allow" data-cfg="allow">${allow}</select></div></div></div>
+  <div class="sec"><h3>Horarios de salida</h3><div class="row2">${times}</div></div>
+  <div class="sec"><h3>Campo</h3><p class="note">Par y ventaja por hoyo del Campestre León según 18Birdies. Si la tarjeta del club dice otra cosa, corrígela aquí.</p>
+    <div class="coursewrap"><table class="course"><tr><th></th>${cols}</tr><tr><th>Par</th>${parRow}</tr><tr><th>Vent.</th>${siRow}</tr></table></div></div>
+  <div class="sec"><h3>Reiniciar</h3><p class="note">Borra todas las tarjetas capturadas para todos. Úsalo solo para limpiar pruebas antes de salir.</p>
+    <button class="danger" data-act="wipe" id="wipe">Borrar todas las tarjetas</button></div>`;
+}
+function render(){
+  header();
+  const v=$('#view');
+  v.innerHTML=ui.tab==='score'?renderScore():ui.tab==='players'?renderPlayers():ui.tab==='settings'?renderSettings():renderBoard();
+  if(ui.tab==='score'){const h=document.querySelector('.hb.on');if(h)h.scrollIntoView({block:'nearest',inline:'center'})}
+  LS.set('ui',{tab:ui.tab,g:ui.g,hole:ui.hole,filter:ui.filter});
+}
+function softRender(){
+  const a=document.activeElement;
+  if(a&&a.tagName&&/INPUT|SELECT|TEXTAREA/.test(a.tagName)&&(ui.tab==='players'||ui.tab==='settings'||a.classList.contains('copy'))) {header();return}
+  render();
+}
+function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('show');clearTimeout(toast.t);toast.t=setTimeout(()=>t.classList.remove('show'),1800)}
+function setSync(){
+  const n=Object.keys(queue).length, el=$('#sync');
+  el.className='sync '+(!sb?'bad':n?'warn':online?'ok':'warn');
+  el.querySelector('span').textContent=!sb?'Sin servidor':n?`${n} por subir`:online?(live?'En vivo':'Sincronizado'):'Sin señal';
+}
+
+/* ===== Guardado ===== */
+function setGross(pid,hole,v){
+  scores[pid]=scores[pid]||{};
+  if(v===null) delete scores[pid][hole]; else scores[pid][hole]=v;
+  queue[pid+'|'+hole]=v; LS.set('scores',scores); LS.set('queue',queue);
+  render(); setSync(); clearTimeout(setGross.t); setGross.t=setTimeout(flush,250);
+}
+let flushing=false;
+async function flush(){
+  if(!sb||flushing) return; const keys=Object.keys(queue); if(!keys.length) return;
+  flushing=true;
+  const rows=keys.map(k=>{const [pid,h]=k.split('|');return {pid,hole:Number(h),gross:queue[k],updated_at:new Date().toISOString()}});
+  const snap=clone(queue);
+  const {error}=await sb.from(T_SCORES).upsert(rows,{onConflict:'pid,hole'});
+  flushing=false;
+  if(error){online=false;setSync();return}
+  for(const k of Object.keys(snap)) if(queue[k]===snap[k]) delete queue[k];
+  LS.set('queue',queue); online=true; setSync();
+  if(Object.keys(queue).length) flush();
+}
+setInterval(flush,5000);
+const kvTimers={};
+const lastEdit={};
+function saveKv(k){
+  lastEdit[k]=Date.now();
+  LS.set(k,k==='cfg'?cfg:roster);
+  clearTimeout(kvTimers[k]);
+  kvTimers[k]=setTimeout(async()=>{ if(!sb) return;
+    const {error}=await sb.from(T_KV).upsert({k:k==='cfg'?'config':'roster',v:k==='cfg'?cfg:roster,updated_at:new Date().toISOString()});
+    if(error) toast('No se guardó; revisa la señal'); },500);
+}
+
+/* ===== Carga y tiempo real ===== */
+function applyScoreRow(r){
+  const k=r.pid+'|'+r.hole; if(k in queue) return; // lo mío pendiente manda
+  scores[r.pid]=scores[r.pid]||{};
+  if(r.gross===null||r.gross===undefined) delete scores[r.pid][r.hole]; else scores[r.pid][r.hole]=r.gross;
+}
+function applyKv(r){
+  const fresh=k=>Date.now()-(lastEdit[k]||0)<3000;
+  if(r.k==='config'&&!fresh('cfg')) cfg=Object.assign(clone(DEF_CFG),r.v);
+  if(r.k==='roster'&&Array.isArray(r.v)&&!fresh('roster')) roster=r.v;
+}
+async function pullAll(){
+  if(!sb) return;
+  const [a,b]=await Promise.all([sb.from(T_SCORES).select('pid,hole,gross'),sb.from(T_KV).select('k,v')]);
+  if(a.error||b.error){online=false;setSync();return}
+  const fresh={}; a.data.forEach(r=>{if(r.gross!==null){(fresh[r.pid]=fresh[r.pid]||{})[r.hole]=r.gross}});
+  for(const k of Object.keys(queue)){const [pid,h]=k.split('|');fresh[pid]=fresh[pid]||{};if(queue[k]===null)delete fresh[pid][h];else fresh[pid][h]=queue[k]}
+  scores=fresh; LS.set('scores',scores);
+  b.data.forEach(applyKv); LS.set('cfg',cfg); LS.set('roster',roster);
+  online=true; setSync(); softRender();
+}
+function start(){
+  try{ sb=window.supabase.createClient(SB_URL,SB_KEY,{auth:{persistSession:false}}) }catch(e){ sb=null }
+  setSync(); render();
+  if(!sb) return;
+  pullAll().then(flush);
+  sb.channel('novoa').on('postgres_changes',{event:'*',schema:'public',table:T_SCORES},p=>{if(p.new&&p.new.pid){applyScoreRow(p.new);LS.set('scores',scores);softRender()}})
+    .on('postgres_changes',{event:'*',schema:'public',table:T_KV},p=>{if(p.new&&p.new.k){applyKv(p.new);softRender()}})
+    .subscribe(s=>{live=s==='SUBSCRIBED';setSync()});
+  let tick=0; setInterval(()=>{tick++; if(document.hidden) return; if(!live||tick%3===0) pullAll()},10000);
+  document.addEventListener('visibilitychange',()=>{if(!document.hidden)pullAll()});
+}
+
+/* ===== Eventos ===== */
+document.addEventListener('click',async e=>{
+  const b=e.target.closest('button'); if(!b) return;
+  const d=b.dataset;
+  if(d.tab){ui.tab=d.tab;render();window.scrollTo(0,0);return}
+  if(d.filter){ui.filter=d.filter;render();return}
+  if(d.open){ui.open=ui.open===d.open?null:d.open;render();return}
+  if(d.g){ui.g=d.g;render();return}
+  if(d.hole){ui.hole=Number(d.hole);render();return}
+  if(d.nav){ui.hole=((ui.hole-1+Number(d.nav)+18)%18)+1;render();window.scrollTo({top:0});return}
+  const i=ui.hole-1;
+  if(d.set==='par'){const cur=(scores[d.p]||{})[ui.hole];if(cur==null)setGross(d.p,ui.hole,cfg.par[i]);return}
+  if(d.step){let cur=(scores[d.p]||{})[ui.hole];if(cur==null||cur===-1)cur=cfg.par[i];else cur+=Number(d.step);setGross(d.p,ui.hole,Math.min(15,Math.max(1,cur)));return}
+  if(d.x){const cur=(scores[d.p]||{})[ui.hole];setGross(d.x,ui.hole,cur===-1?null:-1);return}
+  if(d.act==='copy'){
+    const rows=standings();
+    const txt=`🏆 ${cfg.title} · Stableford\n`+rows.map(r=>`${r.tie?'T':''}${r.pos}. ${r.p.name} — ${r.pts} pts${r.thru<18?` (${r.thru} hoyos)`:''}`).join('\n');
+    try{await navigator.clipboard.writeText(txt);toast('Copiado')}
+    catch(err){$('#copybox').innerHTML=`<textarea class="copy" readonly>${esc(txt)}</textarea>`;const ta=$('#copybox textarea');ta.focus();ta.select();toast('Selecciona y copia')}
+    return}
+  if(d.act==='wipe'){
+    if(!b.classList.contains('arm')){b.classList.add('arm');b.textContent='Toca otra vez para confirmar';setTimeout(()=>{if(b.isConnected){b.classList.remove('arm');b.textContent='Borrar todas las tarjetas'}},4000);return}
+    scores={};queue={};LS.set('scores',scores);LS.set('queue',queue);
+    if(sb){const {error}=await sb.from(T_SCORES).delete().neq('pid','');if(error)toast('No se pudo borrar en el servidor')}
+    toast('Tarjetas borradas');render();return}
+});
+document.addEventListener('input',e=>{
+  const el=e.target, d=el.dataset;
+  if(d.pf){const p=roster.find(x=>x.id===d.p);if(!p)return;
+    if(d.pf==='hi'){const s=el.value.replace(',','.').trim();p.hi=s===''?null:(isNaN(Number(s))?p.hi:Number(s));el.classList.toggle('missing',p.hi===null);
+      const c=el.parentElement.querySelector('.ch');const ch=courseHc(p);c.innerHTML=`${ch===null?'—':ch}<small>HC juego</small>`}
+    else p.name=el.value;
+    saveKv('roster');return}
+  if(d.cfg){cfg[d.cfg]=d.cfg==='allow'?Number(el.value):el.value;saveKv('cfg');header();return}
+  if(d.time){cfg.times[d.time]=el.value;saveKv('cfg');return}
+  if(d.par||d.si){const k=d.par!==undefined?'par':'si',idx=Number(d[k]),n=parseInt(el.value,10);if(!isNaN(n)){cfg[k][idx]=n;saveKv('cfg')}return}
+});
+document.addEventListener('change',e=>{if(e.target.dataset.cfg)render()});
+
+start();
+</script>
+</body>
+</html>
